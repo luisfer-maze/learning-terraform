@@ -1,24 +1,42 @@
-data "aws_ami" "app_ami" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["bitnami-tomcat-*-x86_64-hvm-ebs-nami"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["979382823631"] # Bitnami
+data "archive_file" "lambda" {
+  type        = "zip"
+  source_file = "${path.module}/contact-state-keeper/main"
+  output_path = "${path.module}/contact-state-keeper.zip"
 }
 
-resource "aws_instance" "web" {
-  ami           = data.aws_ami.app_ami.id
-  instance_type = var.instance_type
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
 
-  tags = {
-    Name = "HelloWorld"
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "iam_for_lambda" {
+  name               = "iam_for_lambda"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+resource "aws_lambda_function" "test_lambda" {
+  # If the file is not in the current working directory you will need to include a
+  # path.module in the filename.
+  filename      = "contact-state-keeper.zip"
+  function_name = "lambda_function_name"
+  role          = aws_iam_role.iam_for_lambda.arn
+  handler       = "main"
+
+  source_code_hash = data.archive_file.lambda.output_base64sha256
+
+  runtime = "go1.x"
+
+  environment {
+    variables = {
+      foo = "bar"
+    }
   }
 }
