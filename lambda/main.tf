@@ -1,6 +1,6 @@
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "${path.module}/contact-state-keeper/main"
+  source_file = "../contact-state-keeper/main"
   output_path = "${path.module}/contact-state-keeper.zip"
 }
 
