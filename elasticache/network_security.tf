@@ -2,17 +2,18 @@ locals {
   vpn_user_cidr = "10.21.0.0/16"
 }
 
-data "aws_subnet" "core_subnet" {
-    id = "arn:aws:ec2:us-east-1:285466774061:subnet/subnet-0c84691d41dc4bf30"
+resource "aws_subnet" "core_subnet" {
+  vpc_id     = aws_vpc.target_vpc.id
+  cidr_block = "172.31.0.0/24"
 }
 
 resource "aws_elasticache_subnet_group" "ewt_redis" {
   name       = var.cluster_name
-  subnet_ids = [for subnet in data.aws_subnet.core_subnet : subnet.id]
+  subnet_ids = [aws_subnet.core_subnet.id]
 }
 
-data "aws_vpc" "target_vpc" {
-  id = var.vpc_name_common
+resource "aws_vpc" "target_vpc" {
+    cidr_block = "172.31.0.0/16"
 }
 
 resource "aws_security_group" "ewt_elasticache_sg" {
