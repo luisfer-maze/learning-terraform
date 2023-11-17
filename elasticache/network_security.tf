@@ -1,16 +1,9 @@
 locals {
-  subnet_cloudformation_export_names = toset(["CoreNetwork-Az1CoreSubnet", "CoreNetwork-Az2CoreSubnet"])
-  vpn_user_cidr                      = "10.21.0.0/16"
-}
-
-data "aws_cloudformation_export" "subnet_id" {
-  for_each = local.subnet_cloudformation_export_names
-  name     = each.value
+  vpn_user_cidr = "10.21.0.0/16"
 }
 
 data "aws_subnet" "core_subnet" {
-  for_each = data.aws_cloudformation_export.subnet_id
-  id       = each.value.value
+    id = "subnet-0c84691d41dc4bf30"
 }
 
 resource "aws_elasticache_subnet_group" "ewt_redis" {
