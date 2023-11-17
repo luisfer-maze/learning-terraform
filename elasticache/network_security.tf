@@ -3,7 +3,7 @@ locals {
 }
 
 data "aws_subnet" "core_subnet" {
-    arn = "arn:aws:ec2:us-east-1:285466774061:subnet/subnet-0c84691d41dc4bf30"
+    id = "arn:aws:ec2:us-east-1:285466774061:subnet/subnet-0c84691d41dc4bf30"
 }
 
 resource "aws_elasticache_subnet_group" "ewt_redis" {
