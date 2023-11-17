@@ -19,7 +19,7 @@ resource "aws_vpc" "target_vpc" {
 resource "aws_security_group" "ewt_elasticache_sg" {
   name        = "${var.cluster_name}_access"
   description = "Provides access to cluster: ${var.cluster_name} from shared EKS."
-  vpc_id      = data.aws_vpc.target_vpc.id
+  vpc_id      = aws_vpc.target_vpc.id
 
   ingress {
     description = "Redis connection from VPN users."
@@ -34,6 +34,6 @@ resource "aws_security_group" "ewt_elasticache_sg" {
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.target_vpc.cidr_block]
+    cidr_blocks = [aws_vpc.target_vpc.cidr_block]
   }
 }
