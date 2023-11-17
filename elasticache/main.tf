@@ -21,7 +21,7 @@ resource "aws_elasticache_replication_group" "ewt_elasticache" {
   kms_key_id                 = aws_kms_key.elasticache_cmk_key.arn
   automatic_failover_enabled = true
   engine                     = "redis"
-  engine_version             = "7.x"
+  engine_version             = "6.x"
   auto_minor_version_upgrade = true
   node_type                  = var.node_type
   num_cache_clusters         = var.num_nodes
