@@ -1,3 +1,14 @@
+locals {
+  binary_path = "../contact-state-keeper/main"
+  src_path = "../contact-state-keeper"
+}
+
+resource "null_resource" "function_binary" {
+  provisioner "local-exec" {
+    command = "GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GOFLAGS=-trimpath go build -mod=readonly -ldflags='-s -w' -o ${local.binary_path} ${local.src_path}"
+  }
+}
+
 data "archive_file" "lambda" {
   type        = "zip"
   source_file = "../contact-state-keeper/main"
