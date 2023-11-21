@@ -9,7 +9,7 @@ resource "null_resource" "function_binary" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
 
-    command = "sudo rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.4.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && go version"
+    command = "wget https://dl.google.com/go/go1.13.5.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.21.4.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && go version"
   }
 
   provisioner "local-exec" {
