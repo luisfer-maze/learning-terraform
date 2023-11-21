@@ -32,7 +32,7 @@ resource "null_resource" "function_binary" {
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
-    command     = "export GO111MODULE=on"
+    command     = "export GO111MODULE=on && go version"
   }
 
   provisioner "local-exec" {
