@@ -1,10 +1,43 @@
 locals {
   binary_path = "../contact-state-keeper/main"
-  src_path    = "../contact-state-keeper"
+  src_path    = "../contact-state-keeper/."
+}
+
+resource "null_resource" "go_setup" {
+
+  triggers = {
+    hash_go_mod = filemd5("${local.src_path}/go.mod")
+    hash_go_sum = filemd5("${local.src_path}/go.sum")
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = "cp -f ${local.src_path}/go.mod ."
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = "cp -f ${local.src_path}/go.sum ."
+  }
 }
 
 resource "null_resource" "function_binary" {
+  depends_on = [null_resource.go_setup]
+
+  triggers = {
+    hash_go_app = join("", [
+      for file in fileset("${local.src_path}", "*.go") : filemd5("${local.src_path}/${file}")
+    ])
+  }
+
   provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = "export GO111MODULE=on"
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+
     command = "GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GOFLAGS=-trimpath go build -mod=readonly -ldflags='-s -w' -o ${local.binary_path} ${local.src_path}"
   }
 }
@@ -13,7 +46,7 @@ data "archive_file" "lambda" {
   depends_on = [null_resource.function_binary]
 
   type        = "zip"
-  source_file = "../contact-state-keeper/main"
+  source_file = "${path.module}/main"
   output_path = "${path.module}/contact-state-keeper.zip"
 }
 
