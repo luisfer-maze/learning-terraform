@@ -1,40 +1,10 @@
 locals {
-  binary_path = "../contact-state-keeper/main"
-  src_path    = "../contact-state-keeper/."
-}
-
-resource "null_resource" "go_setup" {
-
-  triggers = {
-    hash_go_mod = filemd5("${local.src_path}/go.mod")
-    hash_go_sum = filemd5("${local.src_path}/go.sum")
-  }
-
-  provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = "cp -f ${local.src_path}/go.mod ."
-  }
-
-  provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = "cp -f ${local.src_path}/go.sum ."
-  }
+  binary_path  = "${path.module}/tf_generated/main"
+  src_path     = "${path.module}/../contact-state-keeper"
+  archive_path = "${path.module}/tf_generated/contact-state-keeper.zip"
 }
 
 resource "null_resource" "function_binary" {
-  depends_on = [null_resource.go_setup]
-
-  triggers = {
-    hash_go_app = join("", [
-      for file in fileset("${local.src_path}", "*.go") : filemd5("${local.src_path}/${file}")
-    ])
-  }
-
-  provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
-    command     = "export GO111MODULE=on && go version"
-  }
-
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
 
@@ -46,8 +16,8 @@ data "archive_file" "lambda" {
   depends_on = [null_resource.function_binary]
 
   type        = "zip"
-  source_file = "${path.module}/main"
-  output_path = "${path.module}/contact-state-keeper.zip"
+  source_file = local.binary_path
+  output_path = local.archive_path
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -71,7 +41,7 @@ resource "aws_iam_role" "iam_for_lambda" {
 resource "aws_lambda_function" "test_lambda" {
   # If the file is not in the current working directory you will need to include a
   # path.module in the filename.
-  filename      = "contact-state-keeper.zip"
+  filename      = local.archive_path
   function_name = "lambda_function_name"
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "main"
