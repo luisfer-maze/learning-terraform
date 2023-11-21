@@ -1,6 +1,6 @@
 locals {
   binary_path = "../contact-state-keeper/main"
-  src_path = "../contact-state-keeper"
+  src_path    = "../contact-state-keeper"
 }
 
 resource "null_resource" "function_binary" {
@@ -10,6 +10,8 @@ resource "null_resource" "function_binary" {
 }
 
 data "archive_file" "lambda" {
+  depends_on = [null_resource.function_binary]
+
   type        = "zip"
   source_file = "../contact-state-keeper/main"
   output_path = "${path.module}/contact-state-keeper.zip"
